@@ -1,16 +1,15 @@
 const taskInput = document.getElementById("input");
 const addButton = document.getElementById("buttonAdd");
 const taskList = document.querySelector("#listTask");
-let tasks=[];
+let tasks= JSON.parse(localStorage.getItem("tasks"))||[];
 
-
-
-async function render(){
+function saveTask(){
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+function render(){
     taskList.innerHTML="";
-        console.log("Tasks:", tasks);
 
     tasks.forEach(function(task, index){
-                console.log("Rendering:", task.taskText);
 
         const newtask = document.createElement("li");
         const deleteBtn = document.createElement("button");
@@ -38,7 +37,7 @@ async function render(){
             "hover:bg-red-700",
             "cursor-pointer",
         );
-        if(task.complete){
+        if(task.completed){
             newtask.classList.add("line-through", "text-gray-600");
         }
         newtask.dataset.index= index;
@@ -60,11 +59,12 @@ addButton.addEventListener("click", function(){
 
     tasks.push({
         taskText : taskText,
-        complete : false
+        completed : false
     });
 
 
     taskInput.value="";
+    saveTask();
     render();
 });
 taskList.addEventListener("click", function(event){
@@ -72,14 +72,16 @@ taskList.addEventListener("click", function(event){
     const index = Number(event.target.dataset.index);
         if(event.target.classList.contains("deleteBtn")){
             tasks.splice(index,1);
+            saveTask();
             render();
             return;
         }
     const task = event.target.closest("LI");
-        if(task){
+        if(task && taskList.contains(task)){
             const taskIndex = Number(task.dataset.index);
 
-            tasks[taskIndex].complete = !tasks[taskIndex].complete;
+            tasks[taskIndex].completed = !tasks[taskIndex].completed;
+            saveTask();
             render();
            
         }
