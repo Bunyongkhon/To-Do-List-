@@ -23,6 +23,7 @@ addButton.addEventListener("click", function(){
     );
 
     deleteBtn.classList.add(
+        "deleteBtn",
         "bg-red-500",
         "text-white",
         "px-3",
@@ -34,9 +35,22 @@ addButton.addEventListener("click", function(){
     newtask.append(deleteBtn);
     taskList.append(newtask);
 
-    deleteBtn.addEventListener("click", function(){
-        newtask.remove();
-    });
 
     taskInput.value="";
+});
+taskList.addEventListener("click", function(event){
+        if(event.target.classList.contains("deleteBtn")){
+            event.target.parentElement.remove();
+            return;
+        }
+        if(event.target.tagName==="LI"){
+            event.target.classList.toggle("line-through");
+            event.target.classList.toggle("text-gray-500");
+        }
+    });
+
+taskInput.addEventListener("keydown",function(onKey){
+    if(onKey.key ==="Enter"){
+        addButton.click();
+    }
 });
