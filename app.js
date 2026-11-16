@@ -1,6 +1,8 @@
 const taskInput = document.getElementById("input");
 const addButton = document.getElementById("buttonAdd");
 const taskList = document.querySelector("#listTask");
+const filterButtons = document.querySelectorAll(".btnFilter")
+let currentFilter ="all";
 let tasks= JSON.parse(localStorage.getItem("tasks"))||[];
 
 function saveTask(){
@@ -9,12 +11,28 @@ function saveTask(){
 function render(){
     taskList.innerHTML="";
 
-    tasks.forEach(function(task, index){
+    let filterTasks = tasks.filter(function(task){
+        if (currentFilter ==="active"){
+            return !task.completed;
+        }
+
+        if(currentFilter === "done"){
+            return task.completed;
+        }
+        return true;
+    });
+
+    filterTasks.forEach(function(task){
 
         const newtask = document.createElement("li");
         const deleteBtn = document.createElement("button");
+        const taskTextElement = document.createElement("span");
 
-        newtask.textContent = task.taskText;
+        const originalIndex = tasks.findIndex(function(item){
+            return item === task;
+        });
+
+        taskTextElement.textContent = task.taskText;
         deleteBtn.textContent ="Delete";
 
 
@@ -38,12 +56,23 @@ function render(){
             "cursor-pointer",
         );
         if(task.completed){
-            newtask.classList.add("line-through", "text-gray-600");
+            taskTextElement.classList.add("line-through", "text-gray-600");
         }
-        newtask.dataset.index= index;
-        deleteBtn.dataset.index = index;
-        newtask.append(deleteBtn);
+        newtask.dataset.index= originalIndex;
+        deleteBtn.dataset.index = originalIndex;
+        newtask.append(taskTextElement,deleteBtn);
         taskList.append(newtask);
+    });
+
+    filterButtons.forEach(function(button){
+        if(button.dataset.filter === currentFilter){
+            button.classList.add("bg-blue-600","text-white");
+            button.classList.remove("bg-gray-200", "text-gray-700");
+        }
+        else{
+            button.classList.remove("bg-blue-600", "text-white");
+            button.classList.add("bg-gray-200", "text-gray-700");
+        }
     });
 }
 
@@ -87,6 +116,12 @@ taskList.addEventListener("click", function(event){
         }
     });
 
+filterButtons.forEach(function(button){
+    button.addEventListener("click", function(){
+        currentFilter = button.dataset.filter;
+    });
+});
+
 taskInput.addEventListener("keydown",function(onKey){
     if(onKey.key ==="Enter"){
         if(taskInput.value.trim()===""){
@@ -98,3 +133,6 @@ taskInput.addEventListener("keydown",function(onKey){
         }
     }
 });
+
+
+render();
