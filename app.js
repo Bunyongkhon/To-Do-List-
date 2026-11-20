@@ -4,6 +4,8 @@ const taskList = document.querySelector("#listTask");
 const filterButtons = document.querySelectorAll(".btnFilter")
 let currentFilter ="all";
 let tasks= JSON.parse(localStorage.getItem("tasks"))||[];
+let clickTimer = null;
+
 
 function saveTask(){
     localStorage.setItem("tasks", JSON.stringify(tasks));
@@ -96,29 +98,43 @@ addButton.addEventListener("click", function(){
     saveTask();
     render();
 });
-taskList.addEventListener("click", function(event){
+
+taskList.addEventListener("click", function(event) {
+
+    if (event.target.tagName === "INPUT") return;
 
     const index = Number(event.target.dataset.index);
-        if(event.target.classList.contains("deleteBtn")){
-            tasks.splice(index,1);
-            saveTask();
-            render();
-            return;
-        }
-    const task = event.target.closest("LI");
-        if(task && taskList.contains(task)){
-            const taskIndex = Number(task.dataset.index);
 
-            tasks[taskIndex].completed = !tasks[taskIndex].completed;
-            saveTask();
-            render();
-           
-        }
-    });
+    if (event.target.classList.contains("deleteBtn")) {
+        tasks.splice(index, 1);
+        saveTask();
+        render();
+        return;
+    }
+
+    const taskElement = event.target.closest("li");
+
+    if (!taskElement) return;
+
+    const taskIndex = Number(taskElement.dataset.index);
+
+    clearTimeout(clickTimer);
+
+    clickTimer = setTimeout(function() {
+        tasks[taskIndex].completed = !tasks[taskIndex].completed;
+
+        saveTask();
+        render();
+
+    }, 250);
+
+});
 
 filterButtons.forEach(function(button){
     button.addEventListener("click", function(){
         currentFilter = button.dataset.filter;
+
+        render();
     });
 });
 
@@ -133,6 +149,68 @@ taskInput.addEventListener("keydown",function(onKey){
         }
     }
 });
+taskList.addEventListener("dblclick", function(event) {
 
+    clearTimeout(clickTimer);
 
+    const taskElement = event.target.closest("li");
+
+    if (!taskElement) return;
+
+    const taskTextElement = taskElement.querySelector("span");
+
+    if (!taskTextElement) return;
+
+    const index = Number(taskElement.dataset.index);
+    const task = tasks[index];
+
+    const input = document.createElement("input");
+
+    input.value = task.taskText;
+
+    input.classList.add(
+        "border",
+        "border-blue-500",
+        "rounded",
+        "px-2",
+        "py-1"
+    );
+
+    taskTextElement.replaceWith(input);
+
+    input.focus();
+
+    let finished = false;
+
+    function finishEditing(save) {
+
+        if (finished) return;
+
+        finished = true;
+
+        if (save && input.value.trim() !== "") {
+            task.taskText = input.value.trim();
+            saveTask();
+        }
+
+        render();
+    }
+
+    input.addEventListener("keydown", function(e) {
+
+        if (e.key === "Enter") {
+            finishEditing(true);
+        }
+
+        if (e.key === "Escape") {
+            finishEditing(false);
+        }
+
+    });
+
+    input.addEventListener("blur", function() {
+        finishEditing(true);
+    });
+
+});
 render();
