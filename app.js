@@ -37,6 +37,10 @@ function render(){
         taskTextElement.textContent = task.taskText;
         deleteBtn.textContent ="Delete";
 
+        taskTextElement.classList.add("flex-1",
+            "min-w-0",
+            "break-words"
+        );
 
         newtask.classList.add(
             "bg-gray-100",
@@ -49,6 +53,7 @@ function render(){
 
         deleteBtn.classList.add(
             "deleteBtn",
+            "shrink-0",
             "bg-red-500",
             "text-white",
             "px-3",
